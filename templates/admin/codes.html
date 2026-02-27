@@ -1,0 +1,91 @@
+{{define "admin_codes.html"}}{{template "layout" .}}{{end}}
+{{define "content"}}
+<div class="admin-header">
+    <h1>Access Codes</h1>
+    <button class="btn btn-primary" onclick="document.getElementById('create-modal').showModal()">Create Code</button>
+</div>
+
+<dialog id="create-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Create Access Code</h2>
+            <button class="btn-close" onclick="this.closest('dialog').close()">&times;</button>
+        </div>
+        <form method="POST" action="/admin/codes/create" hx-post="/admin/codes/create" hx-target="#codes-table" hx-swap="outerHTML">
+            <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" class="form-input" placeholder="e.g. Team Code" required>
+            </div>
+            <div class="form-group">
+                <label for="code">Code</label>
+                <input type="text" id="code" name="code" class="form-input" placeholder="The access code" required>
+            </div>
+            <div class="form-group">
+                <label for="role">Role</label>
+                <select id="role" name="role" class="form-input">
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="expires_at">Expires (optional)</label>
+                    <input type="datetime-local" id="expires_at" name="expires_at" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="max_uses">Max Uses (optional)</label>
+                    <input type="number" id="max_uses" name="max_uses" class="form-input" min="1" placeholder="Unlimited">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-ghost" onclick="this.closest('dialog').close()">Cancel</button>
+                <button type="submit" class="btn btn-primary" onclick="this.closest('dialog').close()">Create</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+<div class="card" id="codes-table">
+    <div class="card-body">
+        {{if .Codes}}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Role</th>
+                    <th>Uses</th>
+                    <th>Expires</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .Codes}}
+                <tr>
+                    <td><strong>{{.Name}}</strong></td>
+                    <td><span class="badge badge-{{.Role}}">{{.Role}}</span></td>
+                    <td>{{.UseCount}}{{if .MaxUses}} / {{deref .MaxUses}}{{end}}</td>
+                    <td>{{if .ExpiresAt}}{{.ExpiresAt.Format "Jan 02, 2006"}}{{else}}<span class="text-muted">Never</span>{{end}}</td>
+                    <td>{{if .Active}}<span class="badge badge-success">Active</span>{{else}}<span class="badge badge-muted">Revoked</span>{{end}}</td>
+                    <td class="text-muted">{{.CreatedAt.Format "Jan 02, 2006"}}</td>
+                    <td>
+                        {{if .Active}}
+                        <form method="POST" action="/admin/codes/revoke" hx-post="/admin/codes/revoke" hx-target="#codes-table" hx-swap="outerHTML" hx-confirm="Revoke this code?" style="display:inline">
+                            <input type="hidden" name="csrf_token" value="{{$.CSRFToken}}">
+                            <input type="hidden" name="id" value="{{.ID}}">
+                            <button type="submit" class="btn btn-danger btn-sm">Revoke</button>
+                        </form>
+                        {{end}}
+                    </td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+        {{else}}
+        <p class="text-muted text-center">No access codes yet. Create one to get started.</p>
+        {{end}}
+    </div>
+</div>
+{{end}}

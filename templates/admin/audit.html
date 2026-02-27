@@ -1,0 +1,39 @@
+{{define "admin_audit.html"}}{{template "layout" .}}{{end}}
+{{define "content"}}
+<div class="admin-header">
+    <h1>Audit Log</h1>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {{if .Entries}}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Action</th>
+                    <th>Code</th>
+                    <th>IP</th>
+                    <th>User Agent</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .Entries}}
+                <tr>
+                    <td class="text-muted text-nowrap">{{.CreatedAt.Format "Jan 02 15:04:05"}}</td>
+                    <td><span class="badge badge-{{actionClass .Action}}">{{.Action}}</span></td>
+                    <td>{{.CodeName}}</td>
+                    <td class="text-mono">{{.IP}}</td>
+                    <td class="text-muted text-truncate" title="{{.UserAgent}}">{{truncate .UserAgent 40}}</td>
+                    <td class="text-muted">{{.Details}}</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+        {{else}}
+        <p class="text-muted text-center">No audit entries yet</p>
+        {{end}}
+    </div>
+</div>
+{{end}}

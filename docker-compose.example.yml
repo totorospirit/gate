@@ -1,0 +1,49 @@
+services:
+  gate:
+    image: ghcr.io/totorospirit/gate:latest
+    # build: .
+    container_name: gate
+    restart: unless-stopped
+    environment:
+      - ADMIN_CODE=change-me-on-first-run
+      - BASE_URL=https://auth.example.com
+      - COOKIE_DOMAIN=.example.com
+      - APP_NAME=Gate
+      - DB_PATH=/data/gate.db
+    volumes:
+      - gate-data:/data
+    labels:
+      # Gate itself
+      - "traefik.enable=true"
+      - "traefik.http.routers.gate.rule=Host(`auth.example.com`)"
+      - "traefik.http.routers.gate.entrypoints=websecure"
+      - "traefik.http.routers.gate.tls.certresolver=letsencrypt"
+      - "traefik.http.services.gate.loadbalancer.server.port=3000"
+
+      # Forward auth middleware (reuse for any service)
+      - "traefik.http.middlewares.gate-auth.forwardauth.address=http://gate:3000/api/verify/traefik"
+      - "traefik.http.middlewares.gate-auth.forwardauth.trustForwardHeader=true"
+      - "traefik.http.middlewares.gate-auth.forwardauth.authResponseHeaders=X-Gate-User,X-Gate-Role"
+    networks:
+      - proxy
+
+  # Example: protect a service with Gate
+  whoami:
+    image: traefik/whoami
+    container_name: whoami
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.whoami.rule=Host(`whoami.example.com`)"
+      - "traefik.http.routers.whoami.entrypoints=websecure"
+      - "traefik.http.routers.whoami.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.whoami.middlewares=gate-auth@docker"
+    networks:
+      - proxy
+
+volumes:
+  gate-data:
+
+networks:
+  proxy:
+    external: true

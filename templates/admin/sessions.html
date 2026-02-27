@@ -1,0 +1,45 @@
+{{define "admin_sessions.html"}}{{template "layout" .}}{{end}}
+{{define "content"}}
+<div class="admin-header">
+    <h1>Active Sessions</h1>
+</div>
+
+<div class="card" id="sessions-table">
+    <div class="card-body">
+        {{if .AllSessions}}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Role</th>
+                    <th>IP</th>
+                    <th>Last Seen</th>
+                    <th>Expires</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .AllSessions}}
+                <tr>
+                    <td><strong>{{.CodeName}}</strong></td>
+                    <td><span class="badge badge-{{.Role}}">{{.Role}}</span></td>
+                    <td class="text-mono">{{.IP}}</td>
+                    <td class="text-muted">{{.LastSeen.Format "Jan 02 15:04:05"}}</td>
+                    <td class="text-muted">{{.ExpiresAt.Format "Jan 02, 2006 15:04"}}</td>
+                    <td>
+                        <form method="POST" action="/admin/sessions/revoke" hx-post="/admin/sessions/revoke" hx-target="#sessions-table" hx-swap="outerHTML" hx-confirm="Revoke this session?" style="display:inline">
+                            <input type="hidden" name="csrf_token" value="{{$.CSRFToken}}">
+                            <input type="hidden" name="session_id" value="{{.ID}}">
+                            <button type="submit" class="btn btn-danger btn-sm">Revoke</button>
+                        </form>
+                    </td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+        {{else}}
+        <p class="text-muted text-center">No active sessions</p>
+        {{end}}
+    </div>
+</div>
+{{end}}

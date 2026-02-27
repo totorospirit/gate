@@ -1,0 +1,58 @@
+{{define "admin_settings.html"}}{{template "layout" .}}{{end}}
+{{define "content"}}
+<div class="admin-header">
+    <h1>Settings</h1>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Current Configuration</h2>
+    </div>
+    <div class="card-body">
+        <p class="text-muted" style="margin-bottom:1.5rem">Settings are configured via environment variables. Restart the container to apply changes.</p>
+
+        <div class="settings-grid">
+            <div class="setting-item">
+                <div class="setting-label">Application Name</div>
+                <div class="setting-value">{{.AppName}}</div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label">Base URL</div>
+                <div class="setting-value text-mono">{{.BaseURL}}</div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label">Cookie Domain</div>
+                <div class="setting-value text-mono">{{if .CookieDomain}}{{.CookieDomain}}{{else}}<span class="text-muted">Not set (current domain)</span>{{end}}</div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label">Session TTL</div>
+                <div class="setting-value">{{.SessionTTL}}</div>
+            </div>
+            {{if .LogoURL}}
+            <div class="setting-item">
+                <div class="setting-label">Logo URL</div>
+                <div class="setting-value text-mono">{{.LogoURL}}</div>
+            </div>
+            {{end}}
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-top:1.5rem">
+    <div class="card-header">
+        <h2>Environment Variables</h2>
+    </div>
+    <div class="card-body">
+        <pre class="env-block">ADMIN_CODE=&lt;initial-admin-code&gt;
+BASE_URL={{.BaseURL}}
+COOKIE_DOMAIN={{.CookieDomain}}
+SESSION_TTL={{.SessionTTL}}
+APP_NAME={{.AppName}}
+DB_PATH=./data/gate.db
+PORT=3000
+RATE_LIMIT=5
+LOCKOUT_AFTER=10
+LOCKOUT_DURATION=15m</pre>
+    </div>
+</div>
+{{end}}
